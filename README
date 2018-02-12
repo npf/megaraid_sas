@@ -6,7 +6,7 @@ Dell however provides an out-of-tree version of megaraid_sas, version 07.700.52.
 
 This repository provides an extract of the RHEL package provided by Dell, ready to be consumed by dkms on Debian systems.
 
-The drivers files (sources) can be retrieved again using the fetch.sh script (no needed).
+The driver files (sources) stored in this repository can be retrieved again using the fetch.sh script (not needed for building/installing).
 
 To install the driver from sources:
 $ dkms add ./dkms.conf
@@ -18,6 +18,6 @@ dkms mkbmdeb megaraid_sas/07.700.52.00
 
 To build the dkms deb package:
 ./dkms mkdeb megaraid_sas/07.700.52.00
-(Needs to use the ./dkms script provided in this repository to fix a but with the mkdeb command)
+(Needs to use the ./dkms script provided in this repository to fix a bug with the mkdeb command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
 
 Note: Linux 4.14.0 comes with megaraid_sas version 07.702.06.00-rc1.
