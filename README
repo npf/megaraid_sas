@@ -20,4 +20,8 @@ To build the dkms deb package:
 ./dkms mkdeb megaraid_sas/07.700.52.00
 (Needs to use the ./dkms script provided in this repository to fix a bug with the mkdeb command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
 
-Note: Linux 4.14.0 comes with megaraid_sas version 07.702.06.00-rc1.
+Note: watch for updates on the linux-stable branches at kernel.org. Current status:
+- https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/drivers/scsi/megaraid/megaraid_sas.h?h=linux-4.14.y
+- https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/drivers/scsi/megaraid/megaraid_sas.h?h=linux-4.9.y
+- https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git/tree/drivers/scsi/megaraid/megaraid_sas.h?h=linux-4.9.y
+ -> Version 07.702.06.00-rc1 in linux-stable 4.14 but version 06.811.02.00-rc1 in linux-stable 4.9 and linux-stable-rc 4.9
