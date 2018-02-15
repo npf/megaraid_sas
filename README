@@ -1,6 +1,6 @@
-Out-of-tree megaraid_sas driver version 7.x.y.z for GNU/Linux Debian Stretch (Linux kernel 4.9).
+Out-of-tree megaraid_sas driver version 7.x.y.z for GNU/Linux Debian Stretch and Jessie.
 
-As of Feb. 12th 2018, the megacli_sas driver version available in Debian Stretch (Linux 4.9) does not support Dell's H740p raid controller.
+As of Feb. 12th 2018, the megacli_sas driver version available in Debian Stretch (Linux 4.9) does not support Dell's H740p raid controller. Neither do Jessie's (Linux 3.16) and Jessie-backports' (Linux 4.9) ones.
 
 Dell however provides an out-of-tree version of megaraid_sas, version 07.700.52.00, for RHEL 7 and SLES 12.
 
@@ -19,6 +19,11 @@ dkms mkbmdeb megaraid_sas/07.700.52.00
 To build the dkms deb package:
 ./dkms mkdeb megaraid_sas/07.700.52.00
 (Needs to use the ./dkms script provided in this repository to fix a bug with the mkdeb command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
+
+The following line can be added to a Debian source.list file, in order to provide the generated deb packages stored in this repository:
+
+   deb https://github.com/npf/megaraid_sas/raw/master /
+
 
 Note: watch for updates on the linux-stable branches at kernel.org. Current status:
 - https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/drivers/scsi/megaraid/megaraid_sas.h?h=linux-4.14.y
