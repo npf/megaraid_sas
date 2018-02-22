@@ -29,7 +29,7 @@ The following line can be added to a Debian source.list file, in order to provid
 
 Also the modules directory provides the modules .ko files for a direct use, e.g. in the Debian installer possibly using
 
-   d-i partman/early_command string wget https://github.com/npf/megaraid_sas/raw/master/modules/4.9.0-4-amd64/updates/dkms/megaraid_sas.ko && insmod megaraid_sas.ko
+   d-i partman/early_command string wget "https://github.com/npf/megaraid_sas/raw/master/modules/$(uname -r)/updates/dkms/megaraid_sas.ko" && insmod megaraid_sas.ko
 
 as a directive in a preseed file (see: https://www.debian.org/releases/stretch/example-preseed.txt) [not tested yet]
 
