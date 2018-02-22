@@ -38,7 +38,7 @@ Getting the packages with apt:
 The following line can be added to a Debian `sources.list` file, in order to provide the generated deb packages stored in this repository:
 
 ```
-deb [trusted=yes] https://github.com/npf/megaraid_sas/raw/master/debian /
+deb [trusted=yes] https://github.com/npf/megaraid_sas/raw/master/deb /
 ```
 
 Using the driver in the Debian installer:
