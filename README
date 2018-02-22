@@ -8,27 +8,31 @@ This repository provides an extract of the RHEL package provided by Dell, ready 
 
 The driver files (sources) stored in this repository can be retrieved again using the fetch.sh script (not needed for building/installing).
 
+
 To install the driver from sources:
 $ dkms add ./dkms.conf
 $ dkms build megaraid_sas/07.700.52.00
 $ dkms install megaraid_sas/07.700.52.00
 
 To build the binary driver deb package:
-dkms mkbmdeb megaraid_sas/07.700.52.00
+$ dkms mkbmdeb megaraid_sas/07.700.52.00
 
 To build the dkms deb package:
-./dkms mkdeb megaraid_sas/07.700.52.00
+$ ./dkms mkdeb megaraid_sas/07.700.52.00
 (Needs to use the ./dkms script provided in this repository to fix a bug with the mkdeb command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
+
 
 The following line can be added to a Debian source.list file, in order to provide the generated deb packages stored in this repository:
 
-   deb https://github.com/npf/megaraid_sas/raw/master /
+   deb [trusted=yes] https://github.com/npf/megaraid_sas/raw/master/debian /
+
 
 Also the modules directory provides the modules .ko files for a direct use, e.g. in the Debian installer possibly using
 
    d-i partman/early_command string wget https://github.com/npf/megaraid_sas/raw/master/modules/4.9.0-4-amd64/updates/dkms/megaraid_sas.ko && insmod megaraid_sas.ko
 
 as a directive in a preseed file (see: https://www.debian.org/releases/stretch/example-preseed.txt) [not tested yet]
+
 
 Note: watch for updates on the linux-stable branches at kernel.org. Current status:
 - https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/drivers/scsi/megaraid/megaraid_sas.h?h=linux-4.14.y
