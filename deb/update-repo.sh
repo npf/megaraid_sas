@@ -1,3 +1,3 @@
 #!/bin/bash
 
-dpkg-scanpackages . | gzip -f9 > Packages.gz
+dpkg-scanpackages -m . | gzip -f9 > Packages.gz
