@@ -3,33 +3,37 @@ Out-of-tree megaraid_sas driver version 7.x.y.z for GNU/Linux Debian Stretch and
 
 As of Feb. 12th 2018, the megacli_sas driver version available in Debian Stretch (Linux 4.9) does not support Dell's H740p raid controller. Neither do Jessie's (Linux 3.16) and Jessie-backports' (Linux 4.9) ones.
 
-Dell however provides an out-of-tree version of megaraid_sas, version 07.700.52.00, for RHEL 7 and SLES 12.
+Dell and Broadcom however provide out-of-tree version of megaraid_sas for some distributions but not Debian.
 
-This repository provides an extract of the RHEL package provided by Dell, ready to be consumed by dkms on Debian systems.
+This repository provides packages ready to be consumed by dkms on Debian systems, as well as binary modules packages for the usual kernel versions.
+ 
+The driver files (sources) stored in this repository (directory dell and broadcom) can be retrieved again using the `fetch.sh` script (not needed for building/installing).
 
-The driver files (sources) stored in this repository can be retrieved again using the `fetch.sh` script (not needed for building/installing).
+First choose either the broadcom or the dell driver
+---------------------------------------------------
 
+`$ cd broadcom` or `cd dell`
 
 To install the driver from sources:
 -----------------------------------
 ```
 $ dkms add ./dkms.conf
-$ dkms build megaraid_sas/07.700.52.00
-$ dkms install megaraid_sas/07.700.52.00
+$ dkms build megaraid_sas/07.XXX.XX.XX
+$ dkms install megaraid_sas/07.XXX.XX.XX
 ```
 
 To build the binary driver deb package:
 ---------------------------------------
 ```
-$ dkms mkbmdeb megaraid_sas/07.700.52.00
+$ dkms mkbmdeb megaraid_sas/07.XXX.XX.XX
 ```
 
 To build the dkms deb package:
 ------------------------------
 ```
-$ ./dkms mkdeb megaraid_sas/07.700.52.00
+$ ../dkms mkdeb megaraid_sas/07.XXX.XX.XX
 ```
-(Needs to use the `./dkms` script provided in this repository to fix a bug with the `mkdeb` command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
+(Needs to use the `dkms` script provided in this repository to fix a bug with the `mkdeb` command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
 
 
 Getting the packages with apt:
@@ -43,21 +47,15 @@ deb [trusted=yes] https://github.com/npf/megaraid_sas/raw/master/deb /
 
 Using the driver in the Debian installer:
 -----------------------------------------
-The modules directory provides the modules `.ko` files for a direct use, e.g. in the Debian installer.
+One can use a preseed file in order to have the last drivers provided here used in the Debian installer, making use of the `d-i partman/early_command` directive.
 
-One can download and `insmod` the driver manually during the installation (hit `Alt-F2` to get a command line).
-
-Or one can use a preseed file containing the following line:
-```
-d-i partman/early_command string wget "https://github.com/npf/megaraid_sas/raw/master/modules/$(uname -r)/updates/dkms/megaraid_sas.ko" && insmod megaraid_sas.ko
-```
 Such a preseed file is provided in this repository, and can be used as follows:
-1. when in the Debian installer boot menu, press `ESC`
-2. then type: `install preseed/url=https://github.com/npf/megaraid_sas/raw/master/preseed.cfg`
+1. when in the Debian installer boot menu, press `ESC` ;
+2. then type: `install preseed/url=https://github.com/npf/megaraid_sas/raw/master/preseed.cfg`.
 
 Partman should see the disks. If not, check in the console (`Alt-F2`) if the modules is indeed loaded (`lsmod`, `dmesg`). Check for a kernel version mismatch with regard to the files provided here.
 
-Finally, one could setup a PXE netinstall embedding the preseed command to automate everything.
+One could also setup a PXE netinstall embedding the preseed command to automate everything.
 
 Notes:
 ------
