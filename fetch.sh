@@ -15,65 +15,104 @@
 
 set -e
 
-if [ "$1" == "dell" ]; then
-# Dell
-mkdir -p dell
-cd dell
-URL=https://downloads.dell.com/FOLDER04586958M/1/UnifiedDriver_7.700.52.00_RHEL7.tar.gz
-FILE=${URL##*/}
-wget -nc $URL
-cat <<EOF > $FILE.sha256sum
-5de37701bf6ec2494418c0d92ea68c0cbf29b285e147ee52b1944e851ff0c408  UnifiedDriver_7.700.52.00_RHEL7.tar.gz
+usage() {
+  cat <<EOF 1>&2
+Usage: $0 <dell|broadcom|URL> [version]
+
+Arguments:
+  dell      use the last known Dell driver URL
+  broadcom  use the last known Broadcom (upstream) driver URL
+  URL       provide URL yourself
+  version   version if not retievable from URL (optional)
+
 EOF
-sha256sum -c $FILE.sha256sum
-rm $FILE.sha256sum
+exit 0
+}
 
-tar -xvf $FILE
-rm $FILE
+die() {
+  echo "Error: $1" 1>&2
+  exit 1
+}
 
-alien --to-tgz UnifiedDriver_7.700.52.00_RHEL7/megaraid_sas-07.700.52.00_el7.3-2.src.rpm
-rm -r UnifiedDriver_7.700.52.00_RHEL7
-
-tar -xvf megaraid_sas-07.700.52.00_el7.3.tgz 
-rm megaraid_sas-07.700.52.00_el7.3.tgz megaraid_sas.{conf,files,spec}
-
-tar --strip-components=1 -xvf megaraid_sas-07.700.52.00_el7.3.tar.bz2 
-rm megaraid_sas-07.700.52.00_el7.3.tar.bz2
-
-VERSION=07.700.52.00
-sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
-rm .copyarea.db
-
+if [ -z "$1" -o "$1" == "--help" -o "$1" == "-h" ]; then
+  usage
+elif [ "$1" == "dell" ]; then
+  # Search driver from Dell's support/driver pages
+  #URL=https://downloads.dell.com/FOLDER04586958M/1/UnifiedDriver_7.700.52.00_RHEL7.tar.gz
+  URL=https://downloads.dell.com/FOLDER04716643M/1/UnifiedDriver_7.703.06.00_RHEL7.tar.gz
 elif [ "$1" == "broadcom" ]; then
-# Broadcom
-mkdir -p broadcom
-cd broadcom
-URL=https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/MR_LINUX_DRIVER_7.5-07.705.02.00-1.tgz
-FILE=${URL##*/}
-DIR=${FILE%.tgz}
-wget -nc $URL
-cat <<EOF > $FILE.sha256sum
-20a5e3d2907d054bf143421da8b068f31772a58e0caa348bb050770edddfe6f1  MR_LINUX_DRIVER_7.5-07.705.02.00-1.tgz
-EOF
-sha256sum -c $FILE.sha256sum
-rm $FILE.sha256sum
+  # Search from https://www.broadcom.com/support/download-search
+  #URL=https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/MR_LINUX_DRIVER_7.5-07.705.02.00-1.tgz
+  URL=https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/MR_LINUX_DRIVER_7.6-07.706.03.00-1.tgz
+else 
+  URL=$1
+fi
 
-mkdir -p $DIR
-tar -C $DIR -xvf $FILE
-rm $FILE
-
-tar --strip-components=1 -xvf $DIR/megaraid_sas-07.705.02.00-src.tar.gz
-rm -r $DIR
-
-VERSION=07.705.02.00
-sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
-
+if [ -n "$2" ]; then
+  VERSION=$2
+elif [[ $URL =~ ([[:digit:]]?)([[:digit:]]\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+) ]]; then
+	VERSION="${BASH_REMATCH[1]:-0}${BASH_REMATCH[2]}"
 else
+  echo "Cannot retrive VERSION" 1>&2
+  usage
+  exit 1
+fi
 
-cat <<EOF
-Usage:
-  $0 [dell|broadcom]
+echo "URL=$URL"
+echo "VERSION=$VERSION"
 
-EOF
+if [[ $URL =~ ^https://.+\.dell\.com/ ]]; then
+  DIR=dell-$VERSION
+	mkdir -p $DIR
+  echo $URL > $DIR/SOURCE_URL
+	cd $DIR
+	FILE=${URL##*/}
+	wget -nc $URL
+  SRPM=$(tar -tf $FILE | grep .src.rpm)
+  [ -z "$SRPM" ] && die "Cannot retrieve SRPM filename"
+  [[ $SRPM =~ ^/ ]] && die "SRPM file path is not expected not begins with /"
+  echo "SRPM=$SRPM"
+	tar -xvf $FILE $SRPM
+	rm $FILE
+	
+  echo "Convert to tgz (alien)..."
+	alien --to-tgz $SRPM
+	rm -rv ${SRPM%%/*}
 
+  BASENAME=${SRPM##*/}	
+  ALIEN_TGZ=${BASENAME%-*.src.rpm}.tgz
+  DRV_ARCHIVE=$(tar -tf $ALIEN_TGZ | grep $VERSION)
+  [ -z "$DRV_ARCHIVE" ] && die "Cannot retrieve DRV_ARCHIVE filename"
+  [[ $DRV_ARCHIVE =~ ^/ ]] && die "DRV_ARCHIVE file path is not expected not begins with /"
+  echo "DRV_ARCHIVE=$DRV_ARCHIVE"
+	tar -xvf $ALIEN_TGZ
+	rm $ALIEN_TGZ megaraid_sas.{conf,files,spec}
+  
+  echo "Extract driver files from archive..."
+	tar --strip-components=1 -xvf $DRV_ARCHIVE
+	rm $DRV_ARCHIVE
+
+  echo "Fix files..."
+	sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
+	rm -f .copyarea.db
+elif [[ $URL =~ ^https://.+\.broadcom\.com/ ]]; then
+  DIR=broadcom-$VERSION
+	mkdir -p $DIR
+  echo $URL > $DIR/SOURCE_URL
+  mkdir -p $DIR
+  cd $DIR
+  FILE=${URL##*/}
+  TMPDIR=${FILE%.tgz}
+  wget -nc $URL
+  mkdir -p $TMPDIR
+  echo "Extract driver source archive from Broadcom driver bundle..."
+  tar -C $TMPDIR -xvf $FILE megaraid_sas-$VERSION-src.tar.gz
+  rm $FILE
+  
+  echo "Extract driver files from driver source archive..."
+  tar --strip-components=1 -xvf $TMPDIR/megaraid_sas-$VERSION-src.tar.gz
+  rm -r $TMPDIR
+  
+  echo "Fix files..."
+  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
 fi

@@ -9,10 +9,10 @@ This repository provides packages ready to be consumed by dkms on Debian systems
  
 The driver files (sources) stored in this repository (directory dell and broadcom) can be retrieved again using the `fetch.sh` script (not needed for building/installing).
 
-First choose either the broadcom or the dell driver
----------------------------------------------------
+First choose the broadcom or the dell version of driver
+-------------------------------------------------------
 
-`$ cd broadcom` or `cd dell`
+`$ cd broadcom_07.XXX.XX.XX` or `cd dell_07.XXX.XX.XX`
 
 To install the driver from sources:
 -----------------------------------
@@ -35,6 +35,7 @@ $ ../dkms mkdeb megaraid_sas/07.XXX.XX.XX
 ```
 (Needs to use the `dkms` script provided in this repository to fix a bug with the `mkdeb` command, see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=832558)
 
+Generated deb files are stored in `/var/lib/dkms/megaraid_sas/07.XXX.XX.XX.XX/deb`. Files in the `deb` directory of this repository were copied from there after build.
 
 Getting the packages with apt:
 ------------------------------
