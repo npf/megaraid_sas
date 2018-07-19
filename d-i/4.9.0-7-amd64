@@ -1,0 +1,1 @@
+wget https://github.com/npf/megaraid_sas/raw/master/deb/megaraid-sas-modules-4.9.0-7-amd64_07.705.02.00_amd64.deb && udpkg -i megaraid-sas-modules-4.9.0-7-amd64_07.705.02.00_amd64.deb && disk-detect
