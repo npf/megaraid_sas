@@ -9,6 +9,8 @@ This repository provides packages ready to be consumed by dkms on Debian systems
  
 The driver files (sources) stored in this repository (directory dell and broadcom) can be retrieved again using the `fetch.sh` script (not needed for building/installing).
 
+WARNING: getting the driver sources requires accepting the terms of distribution of the vendors (distribution agreement). Using the fetch script or the sources or the deb packages (dkms sources or binary drivers) included in this repository requires that you accepted beforehand the vendors conditions. This script is just a helper, provided with no warranty but the trust you can get by reading the scripts before using them and rebuilding everything yourself.
+
 First choose the broadcom or the dell version of driver
 -------------------------------------------------------
 
