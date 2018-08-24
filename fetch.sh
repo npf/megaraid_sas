@@ -51,7 +51,7 @@ fi
 if [ -n "$2" ]; then
   VERSION=$2
 elif [[ $URL =~ ([[:digit:]]?)([[:digit:]]\.[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+) ]]; then
-	VERSION="${BASH_REMATCH[1]:-0}${BASH_REMATCH[2]}"
+  VERSION="${BASH_REMATCH[1]:-0}${BASH_REMATCH[2]}"
 else
   echo "Cannot retrive VERSION" 1>&2
   usage
@@ -63,41 +63,41 @@ echo "VERSION=$VERSION"
 
 if [[ $URL =~ ^https://.+\.dell\.com/ ]]; then
   DIR=dell-$VERSION
-	mkdir -p $DIR
+  mkdir -p $DIR
   echo $URL > $DIR/SOURCE_URL
-	cd $DIR
-	FILE=${URL##*/}
-	wget -nc $URL
+  cd $DIR
+  FILE=${URL##*/}
+  wget -nc $URL
   SRPM=$(tar -tf $FILE | grep .src.rpm)
   [ -z "$SRPM" ] && die "Cannot retrieve SRPM filename"
   [[ $SRPM =~ ^/ ]] && die "SRPM file path is not expected not begins with /"
   echo "SRPM=$SRPM"
-	tar -xvf $FILE $SRPM
-	rm $FILE
-	
+  tar -xvf $FILE $SRPM
+  rm $FILE
+  
   echo "Convert to tgz (alien)..."
-	alien --to-tgz $SRPM
-	rm -rv ${SRPM%%/*}
+  alien --to-tgz $SRPM
+  rm -rv ${SRPM%%/*}
 
-  BASENAME=${SRPM##*/}	
+  BASENAME=${SRPM##*/}  
   ALIEN_TGZ=${BASENAME%-*.src.rpm}.tgz
   DRV_ARCHIVE=$(tar -tf $ALIEN_TGZ | grep $VERSION)
   [ -z "$DRV_ARCHIVE" ] && die "Cannot retrieve DRV_ARCHIVE filename"
   [[ $DRV_ARCHIVE =~ ^/ ]] && die "DRV_ARCHIVE file path is not expected not begins with /"
   echo "DRV_ARCHIVE=$DRV_ARCHIVE"
-	tar -xvf $ALIEN_TGZ
-	rm $ALIEN_TGZ megaraid_sas.{conf,files,spec}
+  tar -xvf $ALIEN_TGZ
+  rm $ALIEN_TGZ megaraid_sas.{conf,files,spec}
   
   echo "Extract driver files from archive..."
-	tar --strip-components=1 -xvf $DRV_ARCHIVE
-	rm $DRV_ARCHIVE
+  tar --strip-components=1 -xvf $DRV_ARCHIVE
+  rm $DRV_ARCHIVE
 
   echo "Fix files..."
-	sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
-	rm -f .copyarea.db
+  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
+  rm -f .copyarea.db
 elif [[ $URL =~ ^https://.+\.broadcom\.com/ ]]; then
   DIR=broadcom-$VERSION
-	mkdir -p $DIR
+  mkdir -p $DIR
   echo $URL > $DIR/SOURCE_URL
   mkdir -p $DIR
   cd $DIR
