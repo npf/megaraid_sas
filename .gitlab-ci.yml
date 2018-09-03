@@ -1,0 +1,40 @@
+build:
+  tags:
+   - docker
+  image: debian:stretch
+  variables:
+    DRV_NAME: 'megaraid_sas'
+    DRV_DIR: 'broadcom'
+    DRV_VERSION: '07.706.03.00'
+    PKG_NAME_PREFIX: 'megaraid-sas'
+    KERNEL_VERSION_FILTER: "[[:digit:]]\\+\\.[[:digit:]]\\+\\.[[:digit:]]\\+-[[:digit:]]-amd64"
+  script:
+      - set -x
+      - echo -n > /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ jessie main" >> /etc/apt/sources.list
+      - echo "deb http://security.debian.org/debian-security jessie/updates main" >> /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ jessie-updates main" >> /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ jessie-backports main" >> /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ stretch main" >> /etc/apt/sources.list
+      - echo "deb http://security.debian.org/debian-security stretch/updates main" >> /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ stretch-updates main" >> /etc/apt/sources.list
+      - echo "deb http://ftp.fr.debian.org/debian/ stretch-backports main" >> /etc/apt/sources.list
+      - apt-get update
+      - apt-cache search "linux-image" | grep -o -e "[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\(\.bpo\.[[:digit:]]\+\)\?-amd64" | sort -V
+      - KERNEL_VERSION=$(apt-cache search "linux-image" | grep -o -e "[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+-[[:digit:]]\(\.bpo\.[[:digit:]]\+\)\?-amd64" | sort -V | grep -e ${KERNEL_VERSION_FILTER} | tail -n1)
+      - echo "Building ${DRV_NAME} from ${DRV_DIR} version ${DRV_VERSION} for kernel ${KERNEL_VERSION}..."
+      - apt-get -y --no-install-recommends install linux-image-${KERNEL_VERSION} linux-headers-${KERNEL_VERSION} dkms dpkg-dev debhelper fakeroot
+      - cd ${DRV_DIR}-${DRV_VERSION}
+      - dkms add ./dkms.conf
+      - dkms build ${DRV_NAME}/${DRV_VERSION} -k ${KERNEL_VERSION}
+      - ../dkms mkdeb ${DRV_NAME}/${DRV_VERSION}
+      - ls -l /var/lib/dkms/${DRV_NAME}/${DRV_VERSION}/deb/${PKG_NAME_PREFIX}-dkms_${DRV_VERSION}_all.deb
+      - cp -v /var/lib/dkms/${DRV_NAME}/${DRV_VERSION}/deb/${PKG_NAME_PREFIX}-dkms_${DRV_VERSION}_all.deb ../deb/
+      - ../dkms mkbmdeb ${DRV_NAME}/${DRV_VERSION} -k ${KERNEL_VERSION}
+      - ls -l /var/lib/dkms/${DRV_NAME}/${DRV_VERSION}/bmdeb/${PKG_NAME_PREFIX}-modules-${KERNEL_VERSION}_${DRV_VERSION}_amd64.deb
+      - cp -v /var/lib/dkms/${DRV_NAME}/${DRV_VERSION}/bmdeb/${PKG_NAME_PREFIX}-modules-${KERNEL_VERSION}_${DRV_VERSION}_amd64.deb ../deb/
+  artifacts:
+     paths:
+      - deb/${PKG_NAME_PREFIX}-modules-${KERNEL_VERSION}_${DRV_VERSION}_amd64.deb
+      - deb/${PKG_NAME_PREFIX}-dkms_${DRV_VERSION}_all.deb
+     expire_in: '1 day'
