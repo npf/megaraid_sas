@@ -93,7 +93,8 @@ if [[ $URL =~ ^https://.+\.dell\.com/ ]]; then
   rm $DRV_ARCHIVE
 
   echo "Fix files..."
-  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
+  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/" dkms.conf
+  sed -i -e "s/^\(REMAKE_INITRD=.*\)/\1\nAUTOINSTALL=\"yes\"/" dkms.conf
   rm -f .copyarea.db
 elif [[ $URL =~ ^https://.+\.broadcom\.com/ ]]; then
   DIR=broadcom-$VERSION
@@ -114,5 +115,6 @@ elif [[ $URL =~ ^https://.+\.broadcom\.com/ ]]; then
   rm -r $TMPDIR
   
   echo "Fix files..."
-  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/g" dkms.conf
+  sed -i -e "s/^\(PACKAGE_VERSION=\).*/\1$VERSION/" dkms.conf
+  sed -i -e "s/^\(REMAKE_INITRD=.*\)/\1\nAUTOINSTALL=\"yes\"/" dkms.conf
 fi
